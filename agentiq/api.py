@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from hashlib import sha256
 from typing import Annotated
 from uuid import UUID, uuid4
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
+from agentiq.audit import AuditHashConfigurationError, query_audit_hash
 from agentiq.auth import AuthenticatedRequest, AuthenticationError, SupabaseTokenVerifier
 from agentiq.config import Settings, get_settings
 from agentiq.domain import (
@@ -158,6 +158,13 @@ def create_app(
         if role is None:
             raise HTTPException(status_code=403, detail="You do not have access to this tenant")
 
+        try:
+            audit_hash = query_audit_hash(request.query, active_settings)
+        except AuditHashConfigurationError as exc:
+            raise HTTPException(
+                status_code=503, detail="Research audit hashing is not configured"
+            ) from exc
+
         active_service = service or build_service(active_settings)
         result = active_service.run(request.query, max_sources=active_settings.max_sources)
         try:
@@ -167,7 +174,7 @@ def create_app(
                 tenant_id=tenant_id,
                 subject_id=authenticated.subject_id,
                 status=result.status,
-                query_hash=sha256(request.query.encode("utf-8")).hexdigest(),
+                query_hash=audit_hash,
                 created_at=result.created_at,
             )
         except SupabaseGatewayError as exc:

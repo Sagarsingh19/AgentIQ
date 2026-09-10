@@ -3,6 +3,7 @@ from hashlib import sha256
 from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from agentiq.api import create_app, require_authenticated_subject
 from agentiq.auth import AuthenticatedRequest
@@ -65,7 +66,11 @@ def authenticated_app() -> tuple[TestClient, Gateway, str]:
     subject_id = str(uuid4())
     tenant_id = str(uuid4())
     gateway = Gateway(tenant_id, subject_id)
-    app = create_app(Settings(max_sources=2), ResearchService(Search(), Synthesizer()), gateway)
+    app = create_app(
+        Settings(max_sources=2, audit_hmac_key=SecretStr("test-only-audit-key")),
+        ResearchService(Search(), Synthesizer()),
+        gateway,
+    )
     app.dependency_overrides[require_authenticated_subject] = lambda: AuthenticatedRequest(
         UUID(subject_id), "test-access-token"
     )

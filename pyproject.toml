@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentiq"
+version = "0.1.0"
+description = "Evidence-backed business research service"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "fastapi==0.141.1",
+    "httpx==0.28.1",
+    "langchain-groq==1.1.3",
+    "pydantic-settings==2.15.0",
+    "PyJWT[crypto]==2.10.1",
+    "tavily-python==0.8.1",
+    "uvicorn[standard]==0.52.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.16.6",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    "agents",
+    "app",
+    "config",
+    "graph",
+    "pipeline",
+    "prompts",
+    "schemas",
+    "state",
+    "tools",
+]
+
+[tool.setuptools.packages.find]
+include = ["agentiq*"]

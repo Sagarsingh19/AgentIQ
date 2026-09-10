@@ -1,27 +1,6 @@
-from pipeline.pipeline import run_pipeline
+"""Development entry point. Use an ASGI process manager in production."""
 
-
-def main():
-
-    query = input("Enter your query: ")
-
-    state = run_pipeline(query)
-
-    print("\n========== PLAN ==========\n")
-    print(state["plan"])
-
-    print("\n========== RESEARCH ==========\n")
-    print(state["research"])
-
-    print("\n========== ANALYSIS ==========\n")
-    print(state["analysis"])
-
-    print("\n========== CHARTS ==========\n")
-    print(state["visualization"])
-
-    print("\n========== REPORT ==========\n")
-    print(state["report"])
-
+import uvicorn
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run("agentiq.api:app", host="127.0.0.1", port=8000, reload=True)
